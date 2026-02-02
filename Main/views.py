@@ -9,35 +9,34 @@ def index(request):
     if request.method == 'POST':
         form = MessageForm(request.POST)
         if form.is_valid():
-            form.save()
+            message = form.save()
+            # store this message's UUID in session
+            request.session['current_message_uuid'] = str(message.uuid)
             return redirect('Riddle_Generator')
     else:
         form = MessageForm()
     return render(request, 'Message.html', {'form': form})
 
 
+
 # Generate riddles for each word in the message
 def Riddle_Generator(request):
-    # Get latest message
-    message_obj = Message.objects.last()
+    message_uuid = request.session.get('current_message_uuid')
+    if not message_uuid:
+        return redirect('index')  # no message in session
 
-    if not message_obj:
-        return redirect('confirm_link')
-
+    message_obj = Message.objects.get(uuid=message_uuid)
     message_text = message_obj.message
     word_count = len(message_text.split())
-    message_uuid = str(message_obj.uuid)
 
     # Session key scoped to this message
     riddle_form_index_key = f"riddle_form_index_{message_uuid}"
 
-    # Track which riddle we're currently filling
     if riddle_form_index_key not in request.session:
-        request.session[riddle_form_index_key] = 1  # 1-based index
+        request.session[riddle_form_index_key] = 1
 
     current_index = request.session[riddle_form_index_key]
 
-    # Finished creating all riddles
     if current_index > word_count:
         request.session.pop(riddle_form_index_key, None)
         return redirect('confirm_link')
@@ -47,7 +46,7 @@ def Riddle_Generator(request):
         if form.is_valid():
             riddle_instance = form.save(commit=False)
             riddle_instance.word_index = str(current_index)
-            riddle_instance.riddle_id = message_obj  # link ForeignKey
+            riddle_instance.riddle_id = message_obj  # link to THIS message
             riddle_instance.save()
             request.session[riddle_form_index_key] = current_index + 1
             return redirect('Riddle_Generator')
