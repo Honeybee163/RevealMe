@@ -1,3 +1,3 @@
-from Valantine.wsgi import application
+from RevealMe.wsgi import application
 
 app = application
