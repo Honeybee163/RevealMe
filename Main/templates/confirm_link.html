@@ -109,7 +109,17 @@
     <div class="card">
       <h1>Click this link to Reveal the Message</h1>
       <p>Share this with the person who should solve the riddles.</p>
-      <a class="btn" href="{{link}}">Reveal</a>
+      <div style="display:flex; gap:8px; align-items:center;">
+    <a class="btn" href="{{link}}" target="_blank">{{link}}</a>
+    <button onclick="copyLink()">Copy</button>
+  </div>
+
+  <script>
+    function copyLink() {
+      navigator.clipboard.writeText("{{link}}");
+      alert("Link copied!");
+    }
+  </script>
     </div>
   </div>
 </body>
