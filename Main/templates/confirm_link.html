@@ -8,98 +8,113 @@
 
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
+
     :root {
       --teal: #008080;
       --teal2: #006666;
-      --teal3: #00b3b3;
       --white: #ffffff;
-      --shadow: rgba(0,0,0,.22);
+      --shadow: rgba(0,0,0,.25);
+      --red: #8D0608;
     }
 
     body {
       font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
-      background: linear-gradient(135deg, var(--teal), var(--teal2));
-      color: black;
       min-height: 100vh;
-      padding: 20px;
-      line-height: 1.6;
-      animation: fadeIn .7s ease both;
       display: grid;
       place-items: center;
+      padding: 20px;
       background-image: url({% static "bg.jpg" %});
       background-size: cover;
+      background-position: center;
+      animation: fadeIn .7s ease both;
     }
 
     @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(18px); }
+      from { opacity: 0; transform: translateY(20px); }
       to { opacity: 1; transform: translateY(0); }
     }
 
-    @keyframes slideIn {
-      from { opacity: 0; transform: translateX(-20px); }
-      to { opacity: 1; transform: translateX(0); }
+    .container {
+      width: min(900px, 100%);
     }
 
-    .container { width: min(900px, 100%); padding: 32px 14px; }
-
     .card {
-      background: rgba(255,255,255,.10);
-      backdrop-filter: blur(10px);
-      border-radius: 16px;
-      padding: 26px;
-      box-shadow: 0 10px 34px var(--shadow);
-      border: 1px solid rgba(255,255,255,.16);
-      animation: fadeIn .7s ease both;
-      transition: transform .25s ease, box-shadow .25s ease;
+      background: rgba(255,255,255,.12);
+      backdrop-filter: blur(12px);
+      border-radius: 18px;
+      padding: 30px 22px;
+      box-shadow: 0 14px 40px var(--shadow);
+      border: 1px solid rgba(255,255,255,.18);
       text-align: center;
     }
 
-    .card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 14px 44px rgba(0,0,0,.28);
-    }
-
     h1 {
-      font-size: clamp(1.4rem, 3.5vw, 2.2rem);
-      text-shadow: 2px 2px 4px var(--shadow);
-      margin-bottom: 14px;
-      animation: slideIn .6s ease both;
+      font-size: clamp(1.4rem, 3.2vw, 2.2rem);
+      margin-bottom: 12px;
+      color: #000;
     }
 
-    p { opacity: .95; margin-bottom: 16px; }
+    p {
+      opacity: .95;
+      margin-bottom: 18px;
+      color: #000;
+    }
 
-    a.btn {
-      display: inline-block;
+    /* Share box */
+    .share-box {
+      display: flex;
+      gap: 10px;
+      width: 100%;
+      margin-top: 18px;
+    }
+
+    .share-box input {
+      flex: 1;
+      padding: 14px 16px;
       border-radius: 12px;
-      padding: 14px 26px;
-      background: #8D0608;
+      border: none;
+      font-size: 0.9rem;
+      background: rgba(255,255,255,0.9);
+      box-shadow: 0 6px 18px rgba(0,0,0,.18);
+      outline: none;
+      cursor: pointer;
+    }
+
+    .copy-btn {
+      padding: 14px 24px;
+      border-radius: 12px;
+      border: none;
+      background: var(--red);
       color: var(--white);
       font-weight: 800;
       letter-spacing: .06em;
       text-transform: uppercase;
-      text-decoration: none;
+      cursor: pointer;
       box-shadow: 0 6px 18px rgba(0,0,0,.22);
-      position: relative;
-      overflow: hidden;
       transition: transform .2s ease, box-shadow .2s ease, filter .2s ease;
     }
 
-    a.btn::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      transform: translateX(-120%);
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,.28), transparent);
-      transition: transform .5s ease;
+    .copy-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 26px rgba(0,0,0,.32);
+      filter: saturate(1.05);
     }
 
-    a.btn:hover::before { transform: translateX(120%); }
-    a.btn:hover { transform: translateY(-2px); box-shadow: 0 10px 26px rgba(0,0,0,.32); filter: saturate(1.05); }
-    a.btn:active { transform: translateY(-1px); }
+    .copy-btn:active {
+      transform: translateY(-1px);
+    }
+
+    .copy-btn.copied {
+      background: #2e7d32;
+    }
 
     @media (max-width: 768px) {
-      body { padding: 14px; }
-      a.btn { width: 100%; }
+      .share-box {
+        flex-direction: column;
+      }
+      .copy-btn {
+        width: 100%;
+      }
     }
   </style>
 </head>
@@ -109,18 +124,26 @@
     <div class="card">
       <h1>Click this link to Reveal the Message</h1>
       <p>Share this with the person who should solve the riddles.</p>
-      <div style="display:flex; gap:8px; align-items:center;">
-    <a class="btn" href="{{link}}" target="_blank">{{link}}</a>
-    <button onclick="copyLink()">Copy</button>
+
+      <div class="share-box">
+        <input type="text" value="{{ link }}" readonly onclick="this.select()" />
+        <button class="copy-btn" onclick="copyLink(this)">Copy</button>
+      </div>
+    </div>
   </div>
 
   <script>
-    function copyLink() {
-      navigator.clipboard.writeText("{{link}}");
-      alert("Link copied!");
+    function copyLink(btn) {
+      navigator.clipboard.writeText("{{ link }}");
+
+      btn.textContent = "Copied ✓";
+      btn.classList.add("copied");
+
+      setTimeout(() => {
+        btn.textContent = "Copy";
+        btn.classList.remove("copied");
+      }, 2000);
     }
   </script>
-    </div>
-  </div>
 </body>
 </html>
