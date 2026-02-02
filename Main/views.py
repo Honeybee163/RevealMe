@@ -116,15 +116,16 @@ def confirm_view(request, uuid):
 
 
 # Generate and display the confirmation link
+# Generate and display the confirmation link
 def confirm_link(request):
-    message_class = Message.objects.first()
-    if not message_class:
+    # Get current message UUID from session
+    message_uuid = request.session.get('current_message_uuid')
+    if not message_uuid:
         return HttpResponse("No message exists yet.")
 
-    uuid = message_class.uuid
-
+    # Use the UUID directly from session
     link = request.build_absolute_uri(
-        reverse('confirm', args=[uuid])
+        reverse('confirm', args=[message_uuid])
     )
 
     return render(request, 'confirm_link.html', {'link': link})
